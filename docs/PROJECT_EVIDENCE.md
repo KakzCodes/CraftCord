@@ -10,6 +10,7 @@ CV-facing summary this record justifies.
 | Date | Entry |
 | --- | --- |
 | 2026-10-09 | Record created during Prototype 0 (repository audit and baseline). |
+| 2026-10-10 | Prototype 1 started: Windows prerequisites confirmed; added an `on_ready` log line before attempting the first real startup (see below). |
 
 ---
 
@@ -75,3 +76,32 @@ verified" below for what Prototype 1 needs to establish on a real
 ### Milestone plan
 
 No change to the brief's Prototype 1–7 roadmap is indicated by this audit — proceed to **Prototype 1 (local application startup)** next, on the Windows machine where Docker Desktop and internet access are available.
+
+---
+
+## Prototype 1 — Local application startup (in progress)
+
+**Date started:** 2026-10-10
+
+**Windows prerequisites — confirmed present, no installs needed:**
+
+| Tool | Reported version |
+| --- | --- |
+| Docker | 29.8.1 (build 4a63305) |
+| Docker Compose | v5.5.1 |
+| Python | 3.12.10 |
+| Git | 2.56.0.windows.2 |
+
+**Fix applied before the first real startup attempt:** `bot.py` had no
+`on_ready` handler. `setup_hook`'s `slash_commands_synced` log line only
+proves the REST call to register commands succeeded — it runs before the
+gateway connection is confirmed, so on its own it isn't evidence the bot
+is actually online. Added an `on_ready` handler that logs a `bot_ready`
+line (bot user tag, id, guild count) once the gateway connection is live,
+since this milestone's whole point is confirming that connection
+actually happens. Found during inspection while preparing this
+milestone's verification steps, before any startup attempt — not found
+by running the code, since it still can't be run in the audit
+environment.
+
+**Startup attempt:** `PENDING` — not yet run.
