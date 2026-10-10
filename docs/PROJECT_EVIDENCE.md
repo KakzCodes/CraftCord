@@ -177,3 +177,9 @@ case-insensitive username uniqueness actually works, not just that the migration
 **Server registration, session history, and cascade-delete behaviour remain untested** — all three need
 either a real Pterodactyl panel (not available yet, Prototype 7) or direct SQL poking that doesn't add much
 beyond what the uniqueness test already demonstrated. Deferred rather than forced.
+
+**Error-handling confirmed working end-to-end:** running `/online` with no server registered produced a
+clean, user-friendly ephemeral error ("No matching server is registered for this guild. An admin can
+register one with `/admin register-server`.") rather than a crash — proves the
+`@requires_server` → `ServerNotRegistered` → `@audit`'s error-to-embed conversion chain all actually work
+together against the real bot, not just in isolated unit tests.
