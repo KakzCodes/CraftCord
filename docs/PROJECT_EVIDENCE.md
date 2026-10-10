@@ -127,3 +127,10 @@ for package metadata. First real execution of this project, and it immediately c
 of `py_compile` could have found. Fixed by also copying `README.md` in that `COPY` step.
 
 **Startup attempt 2:** `PENDING` — fix not yet re-run.
+
+**Startup attempt 3:** Build succeeded, Postgres became healthy, Alembic migration `0001` applied
+successfully against a real Postgres container, and Discord login succeeded (token valid). Crashed in
+`setup_hook` at `tree.sync(guild=...)` with `discord.errors.Forbidden: 403 Forbidden (error code: 50001):
+Missing Access`. Not a code defect — the bot was invited to the test guild without the
+`applications.commands` OAuth2 scope, so it has no permission to register slash commands there. User
+re-invited with the correct scope; next attempt pending.
