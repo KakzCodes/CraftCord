@@ -14,10 +14,26 @@ from __future__ import annotations
 
 import json
 from functools import lru_cache
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Every optional setting that `.env.example` documents as "leave this
+# line blank to disable" — see Settings._blank_to_none below for why this
+# list has to exist at all.
+_OPTIONAL_SETTINGS_FIELDS = (
+    "discord_guild_id_dev",
+    "pterodactyl_application_api_key",
+    "pterodactyl_owner_user_id",
+    "pterodactyl_egg_id",
+    "pterodactyl_docker_image",
+    "pterodactyl_startup_command",
+    "pterodactyl_create_environment",
+    "pterodactyl_memory_mb",
+    "pterodactyl_disk_mb",
+    "pterodactyl_deploy_location_ids",
+)
 
 
 class Settings(BaseSettings):
@@ -106,6 +122,28 @@ class Settings(BaseSettings):
                 "PTERODACTYL_API_KEY must be a Pterodactyl *client* API key "
                 "(it should start with 'ptlc_'), not an application key."
             )
+        return value
+
+    @field_validator(*_OPTIONAL_SETTINGS_FIELDS, mode="before")
+    @classmethod
+    def _blank_to_none(cls, value: Any) -> Any:
+        """Treat a present-but-empty env var as unset, not as an empty string.
+
+        `.env.example` tells people to leave an optional setting's line as
+        `KEY=` (present, nothing after the `=`) to disable it. Without this,
+        pydantic-settings reads that as the literal empty string `""`, not
+        `None` — which then fails the `ptla_`-prefix check below for a
+        blank `PTERODACTYL_APPLICATION_API_KEY`, or fails int parsing for a
+        blank `DISCORD_GUILD_ID_DEV`/`PTERODACTYL_OWNER_USER_ID`/etc. Either
+        way, `Settings()` would raise at the very first line of startup —
+        before Docker, before the database, before anything — for a value
+        the person deliberately left blank to say "I'm not using this."
+        `mode="before"` runs ahead of int/str coercion, so returning `None`
+        here is handled correctly by each field's own `| None` union from
+        that point on.
+        """
+        if isinstance(value, str) and value.strip() == "":
+            return None
         return value
 
     @field_validator("pterodactyl_application_api_key")

@@ -104,4 +104,19 @@ milestone's verification steps, before any startup attempt — not found
 by running the code, since it still can't be run in the audit
 environment.
 
+**Second fix, found reviewing the user's actual filled-in `.env` before the first run:** every optional
+setting left blank per `.env.example`'s own "leave this line blank to disable" instruction
+(`PTERODACTYL_APPLICATION_API_KEY=`, `PTERODACTYL_OWNER_USER_ID=`, `PTERODACTYL_EGG_ID=`,
+`PTERODACTYL_DEPLOY_LOCATION_IDS=`, and potentially `DISCORD_GUILD_ID_DEV=`) would have been read by
+pydantic-settings as the literal empty string `""`, not `None` — which fails the `ptla_` prefix check or
+int parsing immediately, crashing `Settings()` at the very first line of startup. `.env.example` documented
+a pattern the code didn't actually support. Fixed with a `mode="before"` validator in `config.py` that
+converts a blank string to `None` for every optional setting before type coercion runs. Found by reviewing
+the user's real `.env` contents, not by running it — same category of defect as Prototype 0's command-count
+error: documentation (here, `.env.example`'s own instructions) describing behaviour the code didn't match.
+
+**Also flagged (not a code issue): the user pasted a real Discord bot token into chat while sharing their
+`.env`.** Treated as compromised; the user was told to reset it via the Developer Portal immediately and
+never paste a real secret into chat again. No token value is recorded in this file or anywhere in the repo.
+
 **Startup attempt:** `PENDING` — not yet run.
