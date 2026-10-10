@@ -168,3 +168,12 @@ schema).
 - `audit_log` shows real rows for `link`, `unlink`, `whois` (×2), `help` (×2), `ping` (×2), all `success=true` with real `duration_ms` values — proves the `@audit` decorator correctly wraps commands and writes rows for every invocation, against a real database.
 - Data survived a full `docker compose down` + `docker compose up -d` (container recreation, not just a restart) — `/whois` still remembered the linked account afterward. Proves the named Docker volume (`pgdata`) is correctly persisting Postgres data independent of the container's lifecycle.
 - This also indirectly confirms the composable decorator stack (`@audit` / `@ensure_guild_registered` / `@requires_server`) — previously flagged as "reasoned through but never tested against a real discord.py tree" — genuinely works: `/link` (a command with a real string option) and `/whois` (optional user option) both executed correctly.
+
+**Uniqueness constraint confirmed:** attempting to insert a second user with an already-claimed
+`minecraft_username` ("notch") correctly failed with `duplicate key value violates unique constraint
+"uq_users_minecraft_username"` — the database rejects it exactly as designed, confirming the schema's
+case-insensitive username uniqueness actually works, not just that the migration ran.
+
+**Server registration, session history, and cascade-delete behaviour remain untested** — all three need
+either a real Pterodactyl panel (not available yet, Prototype 7) or direct SQL poking that doesn't add much
+beyond what the uniqueness test already demonstrated. Deferred rather than forced.
