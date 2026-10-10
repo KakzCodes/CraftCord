@@ -134,3 +134,15 @@ successfully against a real Postgres container, and Discord login succeeded (tok
 Missing Access`. Not a code defect — the bot was invited to the test guild without the
 `applications.commands` OAuth2 scope, so it has no permission to register slash commands there. User
 re-invited with the correct scope; next attempt pending.
+
+**Startup attempt 4: SUCCESS.** Full stack came up correctly: Postgres container healthy, Alembic
+migration already applied from the previous attempt (confirmed idempotent — no error re-running against an
+already-migrated database), bot authenticated with Discord, slash commands synced (`count: 11` — the
+correct number of *top-level* registrations: 9 standalone commands + 2 groups, `/server` and `/admin`,
+whose sub-commands register inside that single group entry rather than counting separately; all 20
+commands are present), and `bot_ready` fired with the live bot user tag and guild count. This is the first
+time any part of this project has been confirmed working by actually running it, rather than by
+inspection.
+
+**Still to confirm for Prototype 1 to be complete:** `/ping` and `/help` actually working when invoked in
+Discord, and a clean shutdown (`Ctrl+C` not producing an unhandled error).
