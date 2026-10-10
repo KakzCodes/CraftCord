@@ -119,4 +119,11 @@ error: documentation (here, `.env.example`'s own instructions) describing behavi
 `.env`.** Treated as compromised; the user was told to reset it via the Developer Portal immediately and
 never paste a real secret into chat again. No token value is recorded in this file or anywhere in the repo.
 
-**Startup attempt:** `PENDING` — not yet run.
+**Startup attempt 1:** `docker compose up --build`, run by the user on Windows. Postgres image pulled fine; the
+`bot` image build failed during `pip install .` with `OSError: Readme file does not exist: README.md`.
+Cause: `pyproject.toml` declares `readme = "README.md"`, but the Dockerfile's builder stage only copied
+`pyproject.toml` and `src/` before running `pip install`, so hatchling couldn't find the README it needed
+for package metadata. First real execution of this project, and it immediately caught a real bug no amount
+of `py_compile` could have found. Fixed by also copying `README.md` in that `COPY` step.
+
+**Startup attempt 2:** `PENDING` — fix not yet re-run.
