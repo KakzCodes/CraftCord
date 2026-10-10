@@ -197,3 +197,15 @@ registration, session history, and cascade-delete behaviour on real rows remain 
 (real panel) — this is a reasonable, explained deviation from strict prototype ordering, not a skipped step.
 
 **Next milestone:** Prototype 3 — remaining Discord commands and permission checks.
+
+---
+
+## Prototype 3 — Discord commands (in progress)
+
+**Confirmed working, against the real bot:** `/server list` (correct empty-state message), `/botinfo`
+(accurate real data: version `1.0.0`, uptime, `Guilds: 1`, `Registered Servers: 0`, `DB Pool: 0/10
+connections in use` — confirms `ServerRepository.count_all()` and the live SQLAlchemy pool status both
+report correctly). Combined with earlier confirmations (`/ping`, `/help`, `/link`, `/unlink`, `/whois`,
+`/online`'s error path, `/admin register-server`'s error path), **9 of 20 commands are now confirmed
+working against the real bot**, covering every major code path except real Pterodactyl/RCON interaction and
+admin-permission denial (the latter needs a second, non-admin Discord account to test).
