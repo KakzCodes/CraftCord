@@ -183,3 +183,17 @@ clean, user-friendly ephemeral error ("No matching server is registered for this
 register one with `/admin register-server`.") rather than a crash — proves the
 `@requires_server` → `ServerNotRegistered` → `@audit`'s error-to-embed conversion chain all actually work
 together against the real bot, not just in isolated unit tests.
+
+**Pterodactyl retry/error-handling confirmed working end-to-end:** `/admin register-server` against the
+fake panel address in `.env` correctly retried (visible delay, matching the 3-attempt backoff logic) before
+showing a clean "Couldn't reach the Pterodactyl panel" error rather than crashing or hanging — confirms
+`_send_request`'s retry policy and the transport-error-to-`PterodactylError` mapping both work for real, not
+just in the mocked `respx` unit tests.
+
+**Prototype 2 — Database and persistence: COMPLETE** for everything testable without a real Pterodactyl
+panel (guild upsert, audit logging, data persistence across restart, uniqueness constraint enforcement,
+and the full error-handling chain for both missing-server and unreachable-panel cases). Server
+registration, session history, and cascade-delete behaviour on real rows remain deferred to Prototype 7
+(real panel) — this is a reasonable, explained deviation from strict prototype ordering, not a skipped step.
+
+**Next milestone:** Prototype 3 — remaining Discord commands and permission checks.
