@@ -131,6 +131,25 @@ class CraftCordBot(commands.Bot):
             synced = await self.tree.sync()
             logger.info("slash_commands_synced", scope="global", count=len(synced))
 
+    async def on_ready(self) -> None:
+        """Log a clear, human-scannable confirmation that the gateway connection is live.
+
+        This is the one log line that actually proves Discord accepted the
+        token and the bot is online — `slash_commands_synced` (in
+        `setup_hook`) only proves the REST API call to register commands
+        succeeded, which can happen even if the gateway connection that
+        follows it fails. discord.py can call `on_ready` more than once
+        (e.g. after a reconnect), so this stays side-effect-free beyond
+        logging rather than assuming it only ever fires once.
+        """
+        if self.user is not None:
+            logger.info(
+                "bot_ready",
+                user=str(self.user),
+                user_id=self.user.id,
+                guild_count=len(self.guilds),
+            )
+
     async def close(self) -> None:
         """Dispose the engine and close HTTP clients cleanly, then shut down the gateway connection."""
         await self.pterodactyl.aclose()
