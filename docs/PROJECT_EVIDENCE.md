@@ -144,5 +144,15 @@ commands are present), and `bot_ready` fired with the live bot user tag and guil
 time any part of this project has been confirmed working by actually running it, rather than by
 inspection.
 
-**Still to confirm for Prototype 1 to be complete:** `/ping` and `/help` actually working when invoked in
-Discord, and a clean shutdown (`Ctrl+C` not producing an unhandled error).
+**Confirmed by the user, in their live test server:**
+- `/ping` and `/help` both respond correctly.
+- `Ctrl+C` produces a clean shutdown — `Gracefully Stopping...`, both containers stop with no error or traceback.
+
+**Prototype 1 — Local application startup: COMPLETE.** Every item in the brief's checklist for this
+milestone is now verified by actually running it, not just by inspection: container build, Postgres health,
+Alembic migrations (including a confirmed-idempotent second run), Discord authentication, slash-command
+registration, at least two commands responding correctly in a live Discord server, and a clean shutdown.
+
+**Next milestone:** Prototype 2 — database and persistence (verify constraints, cascades, and data survival
+across a normal container restart, beyond what Prototype 0's static inspection already confirmed about the
+schema).

@@ -1,11 +1,10 @@
 # CraftCord — CV Project Entry
 
-**Status: PROVISIONAL.** Written at the end of Prototype 0 (repository audit)
-from code inspection only. No automated test has been run, no container
-has been built, and no live Discord/PostgreSQL/Pterodactyl connection has
-been made yet. Do not copy this onto a live CV until Prototype 1 onward
-produce verified results — see `PROJECT_EVIDENCE.md` for what's actually
-been confirmed and what's still pending.
+**Status: PARTIALLY VERIFIED.** Updated at the end of Prototype 1 (local
+startup). The first bullet below now rests on an actually-executed,
+working system — the others are still design/implementation claims from
+code inspection, pending Prototypes 2–6. See `PROJECT_EVIDENCE.md` for the
+full, dated verification log.
 
 ---
 
@@ -25,12 +24,15 @@ been confirmed and what's still pending.
   target-server resolution and role-based admin permissions consistently
   across 20 slash commands, and containerised the stack with Docker and
   Docker Compose, including an Alembic-migrate-on-startup entrypoint.
+- Verified the full stack end-to-end in Docker Compose: PostgreSQL
+  reaching a healthy state, Alembic migrations applying cleanly and
+  idempotently on restart, the bot authenticating with Discord and
+  registering 20 slash commands, commands responding correctly in a live
+  test server, and the process shutting down cleanly on signal.
 
 ---
 
-*Why no fourth bullet yet:* the brief this project follows caps the entry
-at four bullets and requires every claim to be backed by measured
-evidence, not estimated. A fourth bullet — covering test coverage, a
-successful containerised run, or live command verification — gets added
-once Prototype 1–6 actually produce that evidence, rather than being
-filled with a placeholder now.
+*Still pending before the remaining bullets can be strengthened further:*
+automated test results and coverage (Prototype 6), and any interaction
+with a real Pterodactyl panel or Minecraft server (Prototype 7) — see
+`PROJECT_EVIDENCE.md`.
