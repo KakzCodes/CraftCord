@@ -209,3 +209,33 @@ report correctly). Combined with earlier confirmations (`/ping`, `/help`, `/link
 `/online`'s error path, `/admin register-server`'s error path), **9 of 20 commands are now confirmed
 working against the real bot**, covering every major code path except real Pterodactyl/RCON interaction and
 admin-permission denial (the latter needs a second, non-admin Discord account to test).
+
+---
+
+## Prototype 6 — Automated test suite (ran ahead of schedule — big enough result to log now)
+
+**Date:** 2026-10-10
+
+**Result: 40/40 tests passed, 0 failed, 0 skipped. Runtime: 10.13s.**
+
+Breakdown: `test_server_flow.py` (1 integration test — mocked Pterodactyl + a real Postgres container),
+`test_embeds.py` (11), `test_pterodactyl.py` (12, including retry-on-5xx, 401/404/422/429 mapping, and the
+newer `PterodactylApplicationClient.create_server` tests), `test_rcon.py` (6, including NBT position
+parsing), `test_repositories.py` (10, run against a real `testcontainers` Postgres instance — unique
+constraints, the partial-unique default-server index, and cascade deletes all genuinely exercised, not
+mocked).
+
+This is the first time the full test suite has ever actually run — previously "tests exist" was a claim
+from reading the files, nothing more. Combined with Prototypes 1–3's live-bot testing, essentially every
+code path that doesn't require a real Pterodactyl panel is now confirmed working by actual execution.
+
+**Non-blocking warnings, noted for a future cleanup pass (not fixed now — tests pass regardless):**
+- `testcontainers.postgres` is deprecated in favour of `testcontainers.community.postgres` (a rename of the
+  import path in a newer library version — one-line fix when convenient).
+- `conftest.py`'s custom `event_loop` fixture is deprecated by `pytest-asyncio` in favour of `loop_scope`
+  marker-based configuration. Still functional; the brief's own spec asked for an "event loop fixture"
+  explicitly, which is what this is — revisit if a future `pytest-asyncio` version actually breaks it.
+- `audioop` deprecation warning comes from discord.py itself (Python 3.13 removed that stdlib module), not
+  from this project's code — nothing to fix here.
+
+**Still pending:** measured coverage percentage (next step).
