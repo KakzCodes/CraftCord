@@ -156,3 +156,15 @@ registration, at least two commands responding correctly in a live Discord serve
 **Next milestone:** Prototype 2 — database and persistence (verify constraints, cascades, and data survival
 across a normal container restart, beyond what Prototype 0's static inspection already confirmed about the
 schema).
+
+---
+
+## Prototype 2 — Database and persistence (in progress)
+
+**Date started:** 2026-10-10
+
+**Confirmed by the user, against the real running stack:**
+- `guilds` table correctly holds the guild's real Discord snowflake id, name, and default `tier='grass'` — proves `GuildRepository.upsert()` (and the `@ensure_guild_registered` decorator that calls it) works end-to-end.
+- `audit_log` shows real rows for `link`, `unlink`, `whois` (×2), `help` (×2), `ping` (×2), all `success=true` with real `duration_ms` values — proves the `@audit` decorator correctly wraps commands and writes rows for every invocation, against a real database.
+- Data survived a full `docker compose down` + `docker compose up -d` (container recreation, not just a restart) — `/whois` still remembered the linked account afterward. Proves the named Docker volume (`pgdata`) is correctly persisting Postgres data independent of the container's lifecycle.
+- This also indirectly confirms the composable decorator stack (`@audit` / `@ensure_guild_registered` / `@requires_server`) — previously flagged as "reasoned through but never tested against a real discord.py tree" — genuinely works: `/link` (a command with a real string option) and `/whois` (optional user option) both executed correctly.
