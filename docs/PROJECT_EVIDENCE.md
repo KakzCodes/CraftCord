@@ -266,3 +266,8 @@ the user; new total expected to be 40 + 14 + 6 = 60 tests.
 
 **All 62 tests passed, 0 failed.** New `test_decorators.py` (16) and `test_mojang.py` (6) both pass, on top
 of the original 40.
+
+**Coverage: 39% → 50%** after the new tests. `decorators.py` went 0%→92%, `mojang.py` 0%→86%. Remaining
+gap is `cogs/*.py`, `bot.py`, `session.py`, `logging_config.py` — all manually verified in Prototypes 1–3
+against the real running bot, per the earlier documented decision not to chase 70% with low-value tests.
+**Prototype 6 closed here.**
