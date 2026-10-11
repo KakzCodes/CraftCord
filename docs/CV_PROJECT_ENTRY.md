@@ -24,13 +24,13 @@ see `PROJECT_EVIDENCE.md` for the full, dated log.
   target-server resolution and role-based admin permissions consistently
   across 20 slash commands, and containerised the stack with Docker and
   Docker Compose, including an Alembic-migrate-on-startup entrypoint.
-- Validated the system through both automated and live testing: 40
+- Validated the system through both automated and live testing: 62
   automated tests (unit and integration, including database-constraint
   and cascade-delete checks run against a real containerised PostgreSQL
-  instance via testcontainers) passing with zero failures, and the full
-  Docker Compose stack verified end-to-end — migrations, Discord
-  authentication, slash-command registration, and live command execution
-  all confirmed working in a real Discord server.
+  instance via testcontainers, 50% statement coverage) passing with zero
+  failures, and the full Docker Compose stack verified end-to-end —
+  migrations, Discord authentication, slash-command registration, and
+  live command execution all confirmed working in a real Discord server.
 
 ---
 
