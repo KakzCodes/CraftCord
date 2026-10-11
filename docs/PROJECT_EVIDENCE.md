@@ -229,6 +229,30 @@ This is the first time the full test suite has ever actually run — previously 
 from reading the files, nothing more. Combined with Prototypes 1–3's live-bot testing, essentially every
 code path that doesn't require a real Pterodactyl panel is now confirmed working by actual execution.
 
+**Coverage measured: 39%**, against the `fail_under = 70` target configured in `pyproject.toml`. The gap is
+entirely explainable rather than a sign of untested code hiding bugs: `cogs/*.py`, `bot.py`,
+`decorators.py`, and `mojang.py` were all at 0% because no *automated* test had been written for them —
+but `cogs/*.py` and most of `bot.py`'s startup path had already been verified *manually*, against the real
+running bot, in Prototypes 1–3 (every command tried actually worked). Coverage tooling has no way to credit
+manual testing, so the number understated how much was actually verified.
+
+**Decision: write automated tests for `decorators.py` and `mojang.py`; deliberately leave `cogs/*.py` and
+`bot.py` as manually-verified-only.** Reasoning: `decorators.py` is the project's one genuinely novel piece
+of machinery (the `@audit`/`@ensure_guild_registered`/`@requires_server`/`@requires_admin` stack with
+`__signature__` manipulation), repeatedly flagged in this record as "reasoned through but never tested
+against a real discord.py tree" — worth testing properly regardless of the coverage number. `mojang.py` is
+cheap to test with the same `respx` pattern already used for the Pterodactyl client. `cogs/*.py` and
+`bot.py`, by contrast, are thin orchestration that call already-tested repositories/clients; testing them
+with equivalent rigor would mean mocking a fake `discord.Interaction` for all 20 commands, for a lot more
+effort than the manual testing already spent proving they work. Chasing 70% by testing low-value glue code
+was rejected in favour of testing the two places automated tests actually add real confidence.
+
+**Added:** `tests/unit/test_decorators.py` (14 tests — all four decorators individually, plus one
+full-stack composition test asserting the exact signature Discord's command tree would see) and
+`tests/unit/test_mojang.py` (6 tests — success, 404, 5xx, and caching behaviour, including a case-
+insensitive cache key). Both written against fakes/mocks (no database, no real HTTP) — not yet re-run by
+the user; new total expected to be 40 + 14 + 6 = 60 tests.
+
 **Non-blocking warnings, noted for a future cleanup pass (not fixed now — tests pass regardless):**
 - `testcontainers.postgres` is deprecated in favour of `testcontainers.community.postgres` (a rename of the
   import path in a newer library version — one-line fix when convenient).
