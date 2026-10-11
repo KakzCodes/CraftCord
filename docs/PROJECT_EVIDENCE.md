@@ -263,3 +263,6 @@ the user; new total expected to be 40 + 14 + 6 = 60 tests.
   from this project's code — nothing to fix here.
 
 **Still pending:** measured coverage percentage (next step).
+
+**All 62 tests passed, 0 failed.** New `test_decorators.py` (16) and `test_mojang.py` (6) both pass, on top
+of the original 40.
