@@ -45,7 +45,9 @@ def upgrade() -> None:
         sa.Column("is_default", sa.Boolean(), nullable=False, server_default=sa.text("false")),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
-        sa.ForeignKeyConstraint(["guild_id"], ["guilds.id"], name="fk_servers_guild_id_guilds", ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["guild_id"], ["guilds.id"], name="fk_servers_guild_id_guilds", ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id", name="pk_servers"),
         sa.UniqueConstraint("pterodactyl_uuid", name="uq_servers_pterodactyl_uuid"),
         sa.UniqueConstraint("guild_id", "name", name="uq_servers_guild_id_name"),

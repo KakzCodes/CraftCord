@@ -236,7 +236,9 @@ def requires_server(func: CogCommand) -> CogCommand:
         if server_row is None:
             raise ServerNotRegistered()
 
-        await func(self, interaction, *args, guild_row=guild_row, server_row=server_row, server=server, **kwargs)
+        await func(
+            self, interaction, *args, guild_row=guild_row, server_row=server_row, server=server, **kwargs
+        )
 
     wrapper.__signature__ = _strip_param(inspect.signature(func), "server_row")  # type: ignore[attr-defined]
     return wrapper

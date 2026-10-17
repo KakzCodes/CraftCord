@@ -365,7 +365,9 @@ class PterodactylClient:
             uuid: The server's Pterodactyl identifier.
             command: The raw console command string.
         """
-        await _send_request(self._http, "POST", f"/api/client/servers/{uuid}/command", json={"command": command})
+        await _send_request(
+            self._http, "POST", f"/api/client/servers/{uuid}/command", json={"command": command}
+        )
 
     async def list_servers(self) -> list[PterodactylServer]:
         """List every server visible to the configured API key.

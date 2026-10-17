@@ -107,7 +107,10 @@ class Server(Base):
     )
 
     def __repr__(self) -> str:  # pragma: no cover - trivial
-        return f"Server(id={self.id}, guild_id={self.guild_id}, name={self.name!r}, default={self.is_default})"
+        return (
+            f"Server(id={self.id}, guild_id={self.guild_id}, "
+            f"name={self.name!r}, default={self.is_default})"
+        )
 
 
 class User(Base):

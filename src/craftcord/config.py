@@ -209,7 +209,8 @@ class Settings(BaseSettings):
         if self.pterodactyl_deploy_location_ids is None:
             return None
         try:
-            ids = [int(part.strip()) for part in self.pterodactyl_deploy_location_ids.split(",") if part.strip()]
+            raw_parts = self.pterodactyl_deploy_location_ids.split(",")
+            ids = [int(part.strip()) for part in raw_parts if part.strip()]
         except ValueError:
             return None
         return ids or None

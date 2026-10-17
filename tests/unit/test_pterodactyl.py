@@ -222,7 +222,11 @@ async def test_create_server_422_raises_validation_error_with_detail(respx_mock,
     respx_mock.post(f"{_BASE_URL}/api/application/servers").mock(
         return_value=httpx.Response(
             422,
-            json={"errors": [{"code": "ValidationException", "status": "422", "detail": "The egg id is invalid."}]},
+            json={
+                "errors": [
+                    {"code": "ValidationException", "status": "422", "detail": "The egg id is invalid."}
+                ]
+            },
         )
     )
 

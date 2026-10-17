@@ -60,7 +60,9 @@ class ConfirmView(discord.ui.View):
     than contorting one view to cover both call sites.
     """
 
-    def __init__(self, *, author_id: int, confirm_label: str, timeout: float = _CONFIRM_TIMEOUT_SECONDS) -> None:
+    def __init__(
+        self, *, author_id: int, confirm_label: str, timeout: float = _CONFIRM_TIMEOUT_SECONDS
+    ) -> None:
         super().__init__(timeout=timeout)
         self.author_id = author_id
         self.confirmed: bool | None = None

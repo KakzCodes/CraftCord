@@ -163,7 +163,10 @@ class MetaCog(commands.Cog, name="Meta"):
             logger.debug("ping_pterodactyl_unreachable", error=str(exc))
 
         lines = [f"**Gateway:** {gateway_ms}ms"]
-        lines.append(f"**Pterodactyl API:** {pterodactyl_ms}ms" if pterodactyl_ms is not None else "**Pterodactyl API:** unreachable")
+        if pterodactyl_ms is not None:
+            lines.append(f"**Pterodactyl API:** {pterodactyl_ms}ms")
+        else:
+            lines.append("**Pterodactyl API:** unreachable")
 
         embed = embeds.info_embed("Pong! 🏓", "\n".join(lines))
         await interaction.followup.send(embed=embed, ephemeral=True)
@@ -175,7 +178,9 @@ class MetaCog(commands.Cog, name="Meta"):
         await interaction.response.defer(ephemeral=True)
 
         if self.bot.user is None:
-            raise CraftCordError(user_message="The bot isn't fully ready yet — please try again in a moment.")
+            raise CraftCordError(
+                user_message="The bot isn't fully ready yet — please try again in a moment."
+            )
 
         permissions = discord.Permissions(
             send_messages=True,
@@ -187,7 +192,9 @@ class MetaCog(commands.Cog, name="Meta"):
             self.bot.user.id, permissions=permissions, scopes=("bot", "applications.commands")
         )
 
-        embed = embeds.info_embed("Invite CraftCord", f"[Click here to invite CraftCord to your server]({url})")
+        embed = embeds.info_embed(
+            "Invite CraftCord", f"[Click here to invite CraftCord to your server]({url})"
+        )
         await interaction.followup.send(embed=embed, ephemeral=True)
 
     @app_commands.command(name="botinfo", description="Show CraftCord version, uptime, and stats")

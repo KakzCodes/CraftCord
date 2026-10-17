@@ -222,7 +222,8 @@ async def test_ensure_guild_registered_raises_outside_a_guild(monkeypatch: pytes
 
 async def test_requires_server_resolves_by_name(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_server = Server(id=10, guild_id=1, name="Survival", pterodactyl_uuid="abc", pterodactyl_numeric_id=1)
-    monkeypatch.setattr(decorators_module, "ServerRepository", _server_repo_with(by_name={"Survival": fake_server}))
+    repo = _server_repo_with(by_name={"Survival": fake_server})
+    monkeypatch.setattr(decorators_module, "ServerRepository", repo)
 
     received = {}
 

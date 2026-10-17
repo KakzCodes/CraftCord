@@ -47,7 +47,7 @@ def format_bytes(b: int) -> str:
     """
     value = float(max(b, 0))
     unit = _BYTE_UNITS[0]
-    for unit in _BYTE_UNITS:
+    for unit in _BYTE_UNITS:  # noqa: B007 - `unit` is read after the loop, once it settles on the final unit
         if value < 1024.0:
             break
         value /= 1024.0
