@@ -271,3 +271,14 @@ of the original 40.
 gap is `cogs/*.py`, `bot.py`, `session.py`, `logging_config.py` — all manually verified in Prototypes 1–3
 against the real running bot, per the earlier documented decision not to chase 70% with low-value tests.
 **Prototype 6 closed here.**
+
+---
+
+## Linting (ruff)
+
+**Date:** 2026-10-11. First run ever: 29 errors (import sorting, deprecated `typing.Union`/`Sequence`
+imports, `datetime.timezone.utc` → `datetime.UTC`, line length, one unused-loop-variable false positive).
+`ruff check . --fix` auto-fixed 30 of 41 (the count grew slightly after the first pass re-evaluated
+fixed files); the remaining 12 line-length violations and the one B007 false positive (a loop variable
+that's genuinely read after the loop ends, not unused — kept with a `# noqa: B007` and a comment explaining
+why) were fixed manually. **0 lint errors remain.**
