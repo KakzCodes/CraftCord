@@ -161,6 +161,11 @@ disposable PostgreSQL container. Pterodactyl and Mojang HTTP calls are mocked
 in automated tests; no automated test proves access to a real panel or game
 server.
 
+GitHub Actions runs the same lint, dependency-audit, PostgreSQL-backed test,
+coverage, Compose-configuration, and image-build checks for pushes and pull
+requests targeting `master`. The workflow uses placeholder values from
+`.env.example`; it does not log in to Discord or contact a Pterodactyl panel.
+
 ### Adding a migration
 
 Schema changes always go through Alembic — the application never calls

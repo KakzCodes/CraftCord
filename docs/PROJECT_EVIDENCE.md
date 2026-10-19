@@ -453,3 +453,24 @@ commit `c764c376625475a0281a408a50be6c72dcfbb241`. The archive also contained
   RCON checks remain pending. No real panel or game server is available, and
   Prototype 7 should stay deferred until infrastructure is available. No
   hosting purchase is required to use the local test setup.
+
+### Continuous integration
+
+**Date:** 2026-10-20
+
+- Added `.github/workflows/ci.yml`, triggered by pushes and pull requests to
+  `master`. It pins the official checkout and Python setup actions to commit
+  SHAs and grants the workflow read-only repository contents permission.
+- The workflow installs the project and development dependencies, runs Ruff
+  and `pip-audit`, executes the PostgreSQL-backed test suite with branch
+  coverage and the configured 70% gate, validates Compose using only
+  `.env.example` placeholders, and builds the application image.
+- This records the configured checks, not a successful hosted Actions run.
+  GitHub will provide the first remote execution result after the commit is
+  pushed. The workflow does not require a Discord token or Pterodactyl panel.
+- Workflow-equivalent local checks on this checkout passed: Ruff, pip-audit
+  (no known vulnerabilities), Compose configuration, **132 tests** (0 failed,
+  0 skipped), **88% branch-aware coverage** (1,422 statements, 200 branches),
+  and `docker build --tag craftcord:ci .`. Pytest emitted the existing
+  `audioop` deprecation warning from discord.py. The hosted workflow itself
+  has not run yet.
