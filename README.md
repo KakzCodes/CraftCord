@@ -9,19 +9,18 @@ PostgreSQL as the single source of truth. There is no web dashboard, no
 paid-tier behavior, no chat bridge, and no scheduled backups yet — see
 [Roadmap](#roadmap).
 
-> **Command count note:** this iteration's spec both targeted "~15
-> commands" and individually enumerated 19 (later 20, once `/admin
-> create-server` was added as an approved extension). Every individually
-> enumerated command is implemented (see [COMMANDS.md](COMMANDS.md))
-> rather than guessing which ones to cut.
+> **Command count:** the agreed command inventory enumerates 20 commands:
+> 7 `/server`, 5 player, 4 `/admin`, and 4 meta commands. The prose elsewhere
+> calls the set 19, but that does not match the enumerated list. CraftCord
+> implements all 20 listed commands; see [COMMANDS.md](COMMANDS.md).
 
 ## Architecture
 
 ```
                     ┌──────────────┐
-   Discord slash  →  │  CraftCord   │  ─── HTTP (client API) ──→  Pterodactyl Panel
+   Discord slash  →  │  CraftCord   │  ── HTTP client API ─────→  Pterodactyl Panel
    commands         │     Bot      │                                    │
-                    │  (discord.py)│                                    │ controls
+                    │  (discord.py)│  ── HTTP application API ─→  (optional provisioning)
                     └──────┬───────┘                                    ▼
                            │                                   Minecraft Container
                  ┌─────────┼─────────┐                                  │
@@ -39,6 +38,8 @@ paid-tier behavior, no chat bridge, and no scheduled backups yet — see
   cogs in `src/craftcord/cogs/`.
 - **Bot → Pterodactyl:** power actions (start/stop/restart), live resource
   stats, and connect-address lookups go through `core/pterodactyl.py`.
+  The optional Application API client provisions servers from one fixed
+  admin-configured template; it is used only by `/admin create-server`.
 - **Bot → PostgreSQL:** every piece of persistent state (registered guilds
   and servers, linked Minecraft accounts, the audit log, and uptime session
   history) lives in Postgres, owned entirely by Alembic migrations.
@@ -58,14 +59,20 @@ paid-tier behavior, no chat bridge, and no scheduled backups yet — see
 
 ## Setup
 
-```bash
-git clone <this-repo-url> craftcord
-cd craftcord
-cp .env.example .env
-# edit .env and fill in DISCORD_TOKEN, PTERODACTYL_URL, PTERODACTYL_API_KEY,
-# DATABASE_URL / POSTGRES_USER / POSTGRES_PASSWORD, and RCON_HOST / RCON_PORT / RCON_PASSWORD
+```powershell
+git clone https://github.com/KakzCodes/craftcord.git
+Set-Location craftcord
+Copy-Item .env.example .env
+notepad .env
 docker compose up --build
 ```
+
+In `.env`, set `DISCORD_TOKEN`, a syntactically valid `PTERODACTYL_URL` and
+client key, and RCON values. `DATABASE_URL` must use the Compose service name
+`db` (as in the example), because the bot connects from inside its container;
+`localhost` there would refer to the bot container itself. `RCON_HOST` must
+also be reachable from that container. A real panel or Minecraft server is
+needed to verify those integrations, but not to validate configuration.
 
 On startup the `bot` container runs `alembic upgrade head` against the `db`
 service before starting the bot process (see `scripts/entrypoint.sh`) — there's
@@ -128,14 +135,15 @@ intended direction for Iteration 2, not a promise of scope or timeline:
 Tests need Docker available locally (for the `testcontainers`-managed
 Postgres instance used by the repository and integration tests):
 
-```bash
-pip install -e ".[dev]"
-pytest
+```powershell
+py -m pip install -e ".[dev]"
+py -m pytest
 ```
 
 Coverage is enforced at ≥70% on `src/craftcord` (see `[tool.coverage.report]`
-in `pyproject.toml`); run `pytest --cov` or `coverage run -m pytest && coverage report`
-to check locally.
+in `pyproject.toml`); run `py -m coverage run -m pytest` followed by
+`py -m coverage report` to check locally. Repository integration tests need
+Docker Desktop running because they start a disposable PostgreSQL container.
 
 ### Adding a migration
 

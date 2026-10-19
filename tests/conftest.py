@@ -18,7 +18,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 
@@ -45,14 +44,6 @@ _DUMMY_ENV = {
     "RCON_PASSWORD": "test-password",
     "LOG_FORMAT": "console",
 }
-
-
-@pytest.fixture(scope="session")
-def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
-    """A session-scoped event loop, so session-scoped async fixtures can share one."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture(scope="session")

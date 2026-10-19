@@ -138,7 +138,7 @@ class PlayersCog(commands.Cog, name="Players"):
         if default_server is not None:
             try:
                 online_players = await self.bot.rcon.list_players(self.bot.rcon_config)
-                is_online = link.minecraft_username in {p.lower() for p in online_players}
+                is_online = link.minecraft_username.lower() in {p.lower() for p in online_players}
                 status = "Online" if is_online else "Offline"
             except RconError as exc:
                 logger.debug("whois_rcon_unavailable", error=str(exc))

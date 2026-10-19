@@ -11,6 +11,8 @@ CV-facing summary this record justifies.
 | --- | --- |
 | 2026-10-09 | Record created during Prototype 0 (repository audit and baseline). |
 | 2026-10-10 | Prototype 1 started: Windows prerequisites confirmed; added an `on_ready` log line before attempting the first real startup (see below). |
+| 2026-10-19 | Recovered the newer local archive, verified the live Docker bot/database, reran all 62 tests, fixed an asyncio test-loop mismatch, and corrected current coverage and setup documentation. |
+| 2026-10-19 | Added configuration/session/logging tests and mocked meta, player, and server command-path tests; corrected `/whois` username comparison; suite now passes at 75% coverage. |
 
 ---
 
@@ -44,7 +46,7 @@ verified" below for what Prototype 1 needs to establish on a real
 
 - Every `.py` file in the project compiles cleanly (`python -m py_compile`) — syntax-valid.
 - File structure matches the intended layout exactly (confirmed with `find`).
-- **20 slash commands implemented**, not 19 — confirmed by an exact `grep` count of `@app_commands.command`/`@group.command` decorators across all four cog files (7 + 5 + 4 + 4 = 20). Earlier documentation (the project brief and `README.md`) said 19, left over from before `/admin create-server` was added; both have been corrected.
+- **20 slash commands implemented** — confirmed by an exact `grep` count of `@app_commands.command`/`@group.command` decorators across all four cog files (7 + 5 + 4 + 4 = 20). The brief says 19, but its enumerated groups total 20. The repository's earliest tracked baseline already contains `/admin create-server`, so the claim that the count was 19 before that command was added is not supported by this repository's history.
 - `COMMANDS.md`'s table already had the correct 20 rows — only the prose summary in `README.md` was stale.
 - No `Base.metadata.create_all()` calls anywhere in application code — schema is Alembic-only, as required.
 - No `print()` calls, no bare `except:`, no `TODO`/`FIXME`/`NotImplementedError` markers anywhere in `src/`.
@@ -53,7 +55,7 @@ verified" below for what Prototype 1 needs to establish on a real
 
 ### Defects found and fixed during this audit
 
-1. **Command-count documentation error.** The project brief and `README.md` both said "19 commands implemented," which was true before `/admin create-server` was added but not after (true count: 20). Fixed in both documents.
+1. **Command-count inconsistency.** The project brief's prose says 19 while its four command groups total 20. `README.md` now states the arithmetic and documents the 20 commands actually present. No command was removed.
 2. **Secret-redaction gap.** `logging_config.py`'s `_SECRET_KEYS` set — the structlog processor that redacts secret values before they reach a log line — did not include `pterodactyl_application_api_key` (the new application-API key setting added alongside on-demand server creation). Checked by grep that this field is never actually passed to a logger call anywhere today, so nothing has leaked in practice, but the redaction safety net had a real gap for it. Fixed by adding it to the set.
 
 ### Not yet verified (requires execution — Prototype 1 onward, on a machine with Docker and internet access)
@@ -282,3 +284,95 @@ imports, `datetime.timezone.utc` → `datetime.UTC`, line length, one unused-loo
 fixed files); the remaining 12 line-length violations and the one B007 false positive (a loop variable
 that's genuinely read after the loop ends, not unused — kept with a `# noqa: B007` and a comment explaining
 why) were fixed manually. **0 lint errors remain.**
+
+---
+
+## Current checkout and live runtime verification
+
+**Date:** 2026-10-19
+**Source:** recovered `craftcord.zip` into the workspace as `current`, at
+commit `c764c376625475a0281a408a50be6c72dcfbb241`. The archive also contained
+`.env` and `.coverage`; neither was restored into the working checkout.
+
+### Live runtime observed
+
+- `docker ps` showed `craftcord-bot-1` running and `craftcord-db-1` healthy.
+- Recent bot logs showed Alembic migration startup completing, slash commands
+  syncing to the configured development guild (`count: 11`, which includes
+  the `/server` and `/admin` command groups), and the `bot_ready` event for
+  one guild.
+- A read-only query inside PostgreSQL showed Alembic revision `0001` and the
+  five application tables: `audit_log`, `guilds`, `server_sessions`,
+  `servers`, and `users`.
+- The source directory recorded in Docker's Compose labels no longer exists;
+  only the ZIP remains at that location. The running containers were left
+  untouched. The recovered checkout has no `.env`, so `docker compose` cannot
+  currently manage those already-running containers from the new path.
+
+### Test harness correction and rerun
+
+- The first rerun collected 62 tests, with 51 passing, 10 repository tests
+  failing, and the PostgreSQL integration test erroring. The traceback showed
+  asyncpg futures attached to a different event loop; pytest-asyncio also
+  failed while inspecting the custom `event_loop` fixture.
+- pytest-asyncio 0.26 documents `event_loop` as deprecated and supports
+  explicit fixture and test loop-scope settings. The custom fixture was
+  removed, both loop scopes were set to `session`, and the declared minimum
+  pytest-asyncio version was raised to 0.24 to support that configuration.
+- Rerun result: **62 passed, 0 failed, 0 skipped** in 9.88 seconds. Two
+  warnings remain: Python's `audioop` deprecation from discord.py and an
+  Alembic `path_separator` configuration warning.
+- `py -m ruff check .`: **all checks passed**.
+- Coverage on this rerun: **49%** (1405 statements, branch measurement
+  enabled). This is below the configured 70% threshold. `cogs/*` and `bot.py`
+  remain at 0% automated coverage despite the separately recorded live
+  command checks; the prior decision to close Prototype 6 at 50% did not meet
+  the brief's stated target, so the coverage work remains open.
+
+### API and player-path evidence
+
+- Existing mocked Pterodactyl tests cover client request authentication and
+  response parsing, power signals, console commands, error mapping/retries,
+  and Application API server creation/validation. These are mocked tests;
+  no real panel integration has been performed.
+- Existing mocked player tests cover Mojang lookups and cache behavior, plus
+  RCON command, player-list, position/dimension parsing, offline-player, and
+  connection-error paths. No live Minecraft RCON endpoint has been tested.
+
+### Current outstanding work
+
+- Prototype 4's mocked API behavior is covered by the passing test suite;
+  real Pterodactyl integration remains unavailable and is not claimed.
+- Prototype 5's mocked Mojang/RCON paths are covered; real RCON integration
+  remains unverified.
+- The 70% automated coverage target is now met; Prototype 6 still needs the
+  broader security/quality review to be recorded.
+- The README's command count, architecture sketch, and setup instructions
+  have now been corrected. Screenshot image links still point to placeholder
+  files that are not in the repository.
+- No changes were pushed to GitHub.
+
+### Follow-up test and behavior verification
+
+- Added unit coverage for environment validation, optional provisioning settings,
+  database session lifecycle, structured logging and secret redaction, and
+  representative meta/player/server command paths. All external API and
+  Discord interactions in these tests are mocked.
+- The `/whois` online check compared the stored Minecraft name case-sensitively
+  against a lowercased RCON player list. It now normalizes both sides; the new
+  mixed-case test reproduces and guards against that bug.
+- `configure_logging()` now sets the root logger's level explicitly, including
+  when the process already has logging handlers installed.
+- Latest full run: **111 passed, 0 failed, 0 skipped**; measured coverage is
+  **75%**, above the configured 70% threshold. Ruff passes and `git diff
+  --check` reports no whitespace errors.
+- This raises automated coverage but does not finish the broader security and
+  quality review. Real Pterodactyl and Minecraft RCON integration remain
+  unverified; Docker containers were not restarted or modified.
+- Static configuration review: `.env` is ignored and not tracked; `.env.example`
+  contains placeholders only. The image uses a multi-stage build and a
+  non-root runtime user; Compose does not publish the database port. Schema
+  changes use Alembic (no `create_all()` path), external HTTP/RCON clients have
+  timeouts, and admin commands are gated by Manage Server or the documented
+  `CraftCord Admin` role. The role is still a hard-coded name, and dependency
+  vulnerability scanning and a real deployment threat review remain pending.

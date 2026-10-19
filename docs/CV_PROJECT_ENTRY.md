@@ -1,10 +1,9 @@
 # CraftCord — CV Project Entry
 
-**Status: MOSTLY VERIFIED.** Updated after the full automated test suite
-ran for the first time. Three of four bullets now rest on measured,
-executed evidence rather than code inspection. Only real Pterodactyl
-panel / Minecraft server integration (Prototype 7) remains unverified —
-see `PROJECT_EVIDENCE.md` for the full, dated log.
+**Status: Prototype verified; external panel/RCON integration pending.** The
+automated suite meets the configured coverage threshold (75% vs. 70%). Real
+Pterodactyl and Minecraft RCON integration has not been tested. See
+`PROJECT_EVIDENCE.md` for the dated evidence and remaining limitations.
 
 ---
 
@@ -24,16 +23,16 @@ see `PROJECT_EVIDENCE.md` for the full, dated log.
   target-server resolution and role-based admin permissions consistently
   across 20 slash commands, and containerised the stack with Docker and
   Docker Compose, including an Alembic-migrate-on-startup entrypoint.
-- Validated the system through both automated and live testing: 62
+- Validated the system through both automated and live testing: 111
   automated tests (unit and integration, including database-constraint
   and cascade-delete checks run against a real containerised PostgreSQL
-  instance via testcontainers, 50% statement coverage) passing with zero
+  instance via testcontainers, 75% statement coverage) passing with zero
   failures, and the full Docker Compose stack verified end-to-end —
   migrations, Discord authentication, slash-command registration, and
   live command execution all confirmed working in a real Discord server.
 
 ---
 
-*Still pending:* a measured test-coverage percentage, and any
-interaction with a real Pterodactyl panel or Minecraft server
-(Prototype 7) — see `PROJECT_EVIDENCE.md`.
+*Still incomplete:* verify integration with a real Pterodactyl panel and
+Minecraft server when available, and complete the broader security/quality
+review. The API tests currently use mocks.

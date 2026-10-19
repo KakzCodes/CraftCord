@@ -95,6 +95,7 @@ def configure_logging(settings: Settings) -> None:
     )
 
     root_logger = logging.getLogger()
+    root_logger.setLevel(getattr(logging, settings.log_level))
     for handler in root_logger.handlers:
         handler.setFormatter(formatter)
 
