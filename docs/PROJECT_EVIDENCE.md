@@ -465,12 +465,13 @@ commit `c764c376625475a0281a408a50be6c72dcfbb241`. The archive also contained
   and `pip-audit`, executes the PostgreSQL-backed test suite with branch
   coverage and the configured 70% gate, validates Compose using only
   `.env.example` placeholders, and builds the application image.
-- This records the configured checks, not a successful hosted Actions run.
-  GitHub will provide the first remote execution result after the commit is
-  pushed. The workflow does not require a Discord token or Pterodactyl panel.
+- The workflow does not require a Discord token or Pterodactyl panel.
 - Workflow-equivalent local checks on this checkout passed: Ruff, pip-audit
   (no known vulnerabilities), Compose configuration, **132 tests** (0 failed,
   0 skipped), **88% branch-aware coverage** (1,422 statements, 200 branches),
   and `docker build --tag craftcord:ci .`. Pytest emitted the existing
-  `audioop` deprecation warning from discord.py. The hosted workflow itself
-  has not run yet.
+  `audioop` deprecation warning from discord.py.
+- The first hosted [GitHub Actions run](https://github.com/KakzCodes/craftcord/actions/runs/39344416732)
+  for commit `12cb503` completed successfully. Dependency installation,
+  Ruff, `pip-audit`, tests, coverage enforcement, Compose validation, and the
+  Docker image build all passed on GitHub's runner.

@@ -17,9 +17,9 @@ Discord login and live Pterodactyl/RCON integration pending.
   features, validated configuration, and safe retries for idempotent API reads;
   containerised the service with Docker Compose and startup migrations.
 - Verified 132 automated tests, including PostgreSQL integration and mocked
-  API/command paths, at 88% branch-aware coverage; Ruff, pip-audit, Compose
-  validation, and the local Docker image build passed. Live panel and RCON
-  integrations remain unverified.
+  API/command paths, at 88% branch-aware coverage. GitHub Actions passes the
+  lint, dependency-audit, coverage, Compose, and Docker image checks on master;
+  live panel and RCON integrations remain unverified.
 
 **Technology:** Python 3.12, discord.py, HTTPX, SQLAlchemy, PostgreSQL,
 Alembic, Pydantic, Docker Compose, pytest, Ruff.
