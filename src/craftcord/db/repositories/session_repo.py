@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import or_, select
 
@@ -46,7 +46,7 @@ class SessionRepository(BaseRepository):
         )
         open_session = await self.session.scalar(stmt)
         if open_session is not None:
-            open_session.stopped_at = datetime.now(timezone.utc)
+            open_session.stopped_at = datetime.now(UTC)
             await self.session.flush()
 
     async def total_uptime_seconds(self, server_id: int, since: datetime) -> float:
@@ -70,7 +70,7 @@ class SessionRepository(BaseRepository):
             or_(ServerSession.stopped_at.is_(None), ServerSession.stopped_at >= since),
         )
         result = await self.session.scalars(stmt)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         total_seconds = 0.0
         for row in result:

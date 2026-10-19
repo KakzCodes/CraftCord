@@ -14,7 +14,7 @@ guild tier) without touching any call site.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import discord
@@ -53,7 +53,7 @@ def _apply_server_chrome(embed: discord.Embed, server: Server, guild_name: str) 
     embed.title = server.name
     embed.set_thumbnail(url=BLOCK_TEXTURE_URL)
     embed.set_footer(text=_footer_text(guild_name))
-    embed.timestamp = datetime.now(timezone.utc)
+    embed.timestamp = datetime.now(UTC)
     return embed
 
 
@@ -179,7 +179,7 @@ def players_online_embed(server: Server, players: list[str], linked_map: dict[st
     )
     embed.title = f"Online — {server.name}"
     embed.set_footer(text=_footer_text(server.guild.name))
-    embed.timestamp = datetime.now(timezone.utc)
+    embed.timestamp = datetime.now(UTC)
     return embed
 
 
@@ -209,5 +209,5 @@ def player_located_embed(
         color=INFO_COLOR,
     )
     embed.add_field(name="Coordinates", value=f"```{x} {y} {z}```", inline=False)
-    embed.timestamp = datetime.now(timezone.utc)
+    embed.timestamp = datetime.now(UTC)
     return embed

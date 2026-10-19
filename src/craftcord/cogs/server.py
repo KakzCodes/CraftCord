@@ -8,7 +8,7 @@ the server is still starting up).
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import discord
 from discord import app_commands
@@ -207,7 +207,7 @@ class ServerCog(commands.Cog, name="Server"):
         """Render registered metadata plus 7-day known uptime, without hitting the panel."""
         await interaction.response.defer()
 
-        since = datetime.now(timezone.utc) - _UPTIME_WINDOW
+        since = datetime.now(UTC) - _UPTIME_WINDOW
         async with get_session() as session:
             uptime_seconds = await SessionRepository(session).total_uptime_seconds(server_row.id, since)
 

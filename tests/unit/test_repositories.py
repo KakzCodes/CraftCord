@@ -7,9 +7,8 @@ why these aren't mocked.
 
 from __future__ import annotations
 
-from sqlalchemy.exc import IntegrityError
-
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from craftcord.db.repositories import GuildRepository, ServerRepository, SessionRepository, UserRepository
 

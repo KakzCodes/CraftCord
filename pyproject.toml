@@ -60,3 +60,12 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+# Without this, ruff's import sorter mistakes the third-party `alembic`
+# package for a first-party/local import -- this project also has a
+# top-level `alembic/` directory (migrations), and ruff's classifier
+# gets confused by the name collision, grouping `from alembic import
+# context` alongside our own `craftcord` imports instead of with other
+# third-party packages like sqlalchemy.
+known-third-party = ["alembic"]

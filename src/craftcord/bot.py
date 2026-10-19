@@ -9,7 +9,7 @@ command sync.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import discord
 from discord import app_commands
@@ -57,7 +57,7 @@ class CraftCordBot(commands.Bot):
         super().__init__(command_prefix=commands.when_mentioned, intents=intents)
 
         self.settings = settings
-        self.started_at = datetime.now(timezone.utc)
+        self.started_at = datetime.now(UTC)
 
         self.pterodactyl = PterodactylClient(settings.pterodactyl_url, settings.pterodactyl_api_key)
         self.rcon = RconClient()

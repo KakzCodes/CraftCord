@@ -10,7 +10,7 @@ command tree at startup).
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import discord
 from discord import app_commands
@@ -203,7 +203,7 @@ class MetaCog(commands.Cog, name="Meta"):
         """Show version, process uptime, guild count, registered-server count, and DB pool status."""
         await interaction.response.defer(ephemeral=True)
 
-        uptime_ms = int((datetime.now(timezone.utc) - self.bot.started_at).total_seconds() * 1000)
+        uptime_ms = int((datetime.now(UTC) - self.bot.started_at).total_seconds() * 1000)
 
         async with get_session() as session:
             total_servers = await ServerRepository(session).count_all()

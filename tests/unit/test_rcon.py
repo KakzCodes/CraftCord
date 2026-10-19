@@ -25,7 +25,7 @@ def fake_rcon(monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
             self.port = port
             self.timeout = timeout
 
-        def __enter__(self) -> "_FakeMCRcon":
+        def __enter__(self) -> _FakeMCRcon:
             return self
 
         def __exit__(self, *exc_info: object) -> bool:
@@ -91,7 +91,7 @@ async def test_connection_failure_raises_rcon_connection_error(monkeypatch: pyte
         def __init__(self, *args: object, **kwargs: object) -> None:
             pass
 
-        def __enter__(self) -> "_FailingMCRcon":
+        def __enter__(self) -> _FailingMCRcon:
             raise ConnectionRefusedError("connection refused")
 
         def __exit__(self, *exc_info: object) -> bool:
