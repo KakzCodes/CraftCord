@@ -9,10 +9,10 @@ PostgreSQL as the single source of truth. There is no web dashboard, no
 paid-tier behavior, no chat bridge, and no scheduled backups yet — see
 [Roadmap](#roadmap).
 
-> **Command count:** the agreed command inventory enumerates 20 commands:
-> 7 `/server`, 5 player, 4 `/admin`, and 4 meta commands. The prose elsewhere
-> calls the set 19, but that does not match the enumerated list. CraftCord
-> implements all 20 listed commands; see [COMMANDS.md](COMMANDS.md).
+> **Implemented command count: 20** — 7 `/server`, 5 player, 4 `/admin`,
+> and 4 meta commands. The source brief's figure of 19 conflicts with its own
+> list; the registered cog inventory is checked by a unit test. See
+> [COMMANDS.md](COMMANDS.md).
 
 ## Architecture
 
@@ -48,31 +48,42 @@ paid-tier behavior, no chat bridge, and no scheduled backups yet — see
 
 ## Prerequisites
 
-- A running [Pterodactyl](https://pterodactyl.io/) panel, with at least one
-  Minecraft server already created on it.
-- A Pterodactyl **client** API key (Panel → Account Settings → API
-  Credentials) — not an application/admin key. It should start with `ptlc_`.
-- A [Discord application](https://discord.com/developers/applications) with
-  a bot user and its token, invited with the `bot` and
-  `applications.commands` scopes (see [below](#inviting-the-bot)).
-- Docker and Docker Compose.
+- Python 3.12 and Docker with Docker Compose for development and automated
+  tests. The PostgreSQL integration tests start a disposable database
+  container.
+- A [Discord application](https://discord.com/developers/applications) and bot
+  token to run the bot. Invite it with the `bot` and `applications.commands`
+  scopes (see [below](#inviting-the-bot)).
+- A running [Pterodactyl](https://pterodactyl.io/) panel, a Minecraft server,
+  and a Pterodactyl **client** API key (starts with `ptlc_`) to use live server
+  controls. They are not needed for mocked tests or to build the image.
+- A Pterodactyl **application** API key (`ptla_`) and a configured creation
+  template only if you want to use `/admin create-server`.
 
 ## Setup
 
 ```powershell
-git clone https://github.com/KakzCodes/craftcord.git
-Set-Location craftcord
+# Run these commands from the repository root.
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 Copy-Item .env.example .env
 notepad .env
+docker compose config --quiet
 docker compose up --build
 ```
 
-In `.env`, set `DISCORD_TOKEN`, a syntactically valid `PTERODACTYL_URL` and
-client key, and RCON values. `DATABASE_URL` must use the Compose service name
-`db` (as in the example), because the bot connects from inside its container;
-`localhost` there would refer to the bot container itself. `RCON_HOST` must
-also be reachable from that container. A real panel or Minecraft server is
-needed to verify those integrations, but not to validate configuration.
+In `.env`, set a real `DISCORD_TOKEN`, a syntactically valid `PTERODACTYL_URL`
+and client key, and RCON values. Never commit `.env`. The example's panel and
+RCON values are placeholders: they pass configuration validation but cannot
+call a real panel or Minecraft server. Those services are not needed for the
+bot to connect to Discord.
+
+`DATABASE_URL` uses the Compose service name `db` because the bot connects
+inside the Compose network; `localhost` inside the bot container would refer
+to the bot itself. From Windows, `db` is not a host name, and the database
+port is not published by default. `RCON_HOST` must resolve and be reachable
+from inside the bot container (for example, another container on the same
+Compose network or a reachable external host).
 
 On startup the `bot` container runs `alembic upgrade head` against the `db`
 service before starting the bot process (see `scripts/entrypoint.sh`) — there's
@@ -99,15 +110,9 @@ nothing to migrate manually.
 
 ## Screenshots
 
-> _Placeholders — add real screenshots here before publishing._
-
-| Command           | Screenshot                          |
-| ----------------- | ------------------------------------ |
-| `/help`           | ![help](docs/screenshots/help.png)   |
-| `/server start`   | ![server start](docs/screenshots/server-start.png) |
-| `/server status`  | ![server status](docs/screenshots/server-status.png) |
-| `/online`         | ![online](docs/screenshots/online.png) |
-| `/locate`         | ![locate](docs/screenshots/locate.png) |
+Screenshots of live command responses are not included yet. Add them under
+`docs/screenshots/` after verifying the corresponding command in a test server;
+live Pterodactyl and RCON screenshots require those services.
 
 ## Roadmap
 
@@ -136,25 +141,37 @@ Tests need Docker available locally (for the `testcontainers`-managed
 Postgres instance used by the repository and integration tests):
 
 ```powershell
-py -m pip install -e ".[dev]"
-py -m pytest
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pytest
 ```
 
 Coverage is enforced at ≥70% on `src/craftcord` (see `[tool.coverage.report]`
-in `pyproject.toml`); run `py -m coverage run -m pytest` followed by
-`py -m coverage report` to check locally. Repository integration tests need
-Docker Desktop running because they start a disposable PostgreSQL container.
+in `pyproject.toml`). Run these PowerShell commands for the full checks:
+
+```powershell
+.\.venv\Scripts\python.exe -m coverage run -m pytest
+.\.venv\Scripts\python.exe -m coverage report --fail-under=70
+.\.venv\Scripts\ruff.exe check .
+.\.venv\Scripts\pip-audit.exe
+```
+
+Repository integration tests need Docker Desktop running because they start a
+disposable PostgreSQL container. Pterodactyl and Mojang HTTP calls are mocked
+in automated tests; no automated test proves access to a real panel or game
+server.
 
 ### Adding a migration
 
 Schema changes always go through Alembic — the application never calls
 `Base.metadata.create_all()`. After changing `src/craftcord/db/models.py`:
 
-```bash
-# from inside the bot container, or locally with DATABASE_URL pointed at a
-# real Postgres instance and the rest of .env's required vars set:
-alembic revision --autogenerate -m "describe the change"
-# review the generated file in alembic/versions/ before committing —
-# autogenerate is a starting point, not a guarantee
-alembic upgrade head
+```powershell
+docker compose exec bot alembic revision --autogenerate -m "describe the change"
+# Review the generated migration in alembic/versions/ before applying it.
+docker compose exec bot alembic upgrade head
+
+## Licence
+
+CraftCord is distributed under the MIT License; see [LICENSE](LICENSE).
 ```

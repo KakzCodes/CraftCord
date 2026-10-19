@@ -1,33 +1,25 @@
-# CraftCord — CV Project Entry
+﻿# CraftCord — CV Project Entry
 
-**Status: Local prototype verified; live panel/RCON integration pending.**
-Automated coverage is 83% against a 70% target. See `PROJECT_EVIDENCE.md`
-for evidence and remaining limitations.
-
----
+**Status:** Local source, tests, and container image verified; current-checkout
+Discord login and live Pterodactyl/RCON integration pending.
 
 **CraftCord** — Discord bot for Minecraft server management via Pterodactyl
-*Personal project · Python, PostgreSQL, Docker · in development*
 
-- Built CraftCord, a Discord bot that lets gaming communities manage
-  Pterodactyl-hosted Minecraft servers through slash commands, with player
-  account linking and in-game status features.
-- Implemented an asynchronous Python backend with SQLAlchemy, PostgreSQL,
-  Alembic migrations and repository-based persistence; integrated typed
-  HTTP clients for Pterodactyl and Mojang with retries and structured,
-  user-safe error handling.
-- Delivered 20 slash commands across server, player, admin and utility
-  workflows, with shared guild/server resolution, audit logging and
-  Manage Server access control; containerised the bot and database using
-  Docker Compose with migrations on startup.
-- Validated with 121 passing automated tests and 83% statement coverage,
-  including PostgreSQL integration and mocked API/command tests. The Docker
-  bot authenticated and synchronised commands in Discord, and at least two
-  commands were confirmed responding in the live test server; real panel
-  and Minecraft RCON integration remain untested.
+*Personal project · Python 3.12, PostgreSQL, Docker Compose*
 
----
+- Engineered a Discord bot for Minecraft server administration, with 20 slash
+  commands covering server controls, player account linking, admin workflows,
+  and utility commands.
+- Built an asynchronous Python backend using SQLAlchemy and PostgreSQL, with
+  Alembic migrations, repository-based persistence, audit logging, and
+  permission checks.
+- Integrated typed HTTP clients for Pterodactyl and Mojang, RCON-backed player
+  features, validated configuration, and safe retries for idempotent API reads;
+  containerised the service with Docker Compose and startup migrations.
+- Verified 132 automated tests, including PostgreSQL integration and mocked
+  API/command paths, at 88% branch-aware coverage; Ruff, pip-audit, Compose
+  validation, and the local Docker image build passed. Live panel and RCON
+  integrations remain unverified.
 
-*Still incomplete:* verify real Pterodactyl and Minecraft RCON integration
-when available. API tests use mocks; dependency vulnerability scanning and
-a deployment threat review are pending.
+**Technology:** Python 3.12, discord.py, HTTPX, SQLAlchemy, PostgreSQL,
+Alembic, Pydantic, Docker Compose, pytest, Ruff.

@@ -63,6 +63,11 @@ def test_optional_blank_environment_values_are_treated_as_unset(
     ("name", "value", "message"),
     [
         ("PTERODACTYL_URL", "panel.test", "must start with http:// or https://"),
+        ("PTERODACTYL_URL", "https://", "must include a hostname"),
+        ("PTERODACTYL_URL", "https://user:secret@panel.test", "must not include embedded credentials"),
+        ("PTERODACTYL_URL", "https://panel.test/?token=secret", "must not include a query string"),
+        ("PTERODACTYL_URL", "https://panel.test:invalid", "contains an invalid port"),
+        ("PTERODACTYL_URL", "https://panel.test:0", "port must be between 1 and 65535"),
         ("PTERODACTYL_API_KEY", "ptla_admin_key", "not an application key"),
         ("PTERODACTYL_APPLICATION_API_KEY", "ptlc_client_key", "application key"),
         ("LOG_LEVEL", "VERBOSE", "LOG_LEVEL must be one of"),

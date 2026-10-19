@@ -2,7 +2,8 @@
 
 All HTTP is mocked with `respx` — no real network access. These assert:
 request shape (URL, headers, JSON body), status-code -> domain-exception
-mapping, and the retry-on-5xx/429 policy.
+mapping, safe retries for read requests, and no retries for non-idempotent
+POST requests.
 """
 
 from __future__ import annotations
@@ -120,36 +121,55 @@ async def test_401_403_maps_to_auth_error(respx_mock, client, status):
 
 
 async def test_429_retries_then_raises_rate_limited(respx_mock, client):
-    route = respx_mock.post(f"{_BASE_URL}/api/client/servers/abc123/power").mock(
-        return_value=httpx.Response(429)
-    )
+    route = respx_mock.get(f"{_BASE_URL}/api/client/servers/abc123").mock(return_value=httpx.Response(429))
 
     with pytest.raises(PterodactylRateLimited):
-        await client.send_power("abc123", "start")
+        await client.get_server("abc123")
 
     assert route.call_count == 3
 
 
 async def test_5xx_retries_up_to_max_attempts(respx_mock, client):
-    route = respx_mock.post(f"{_BASE_URL}/api/client/servers/abc123/power").mock(
-        return_value=httpx.Response(503)
-    )
+    route = respx_mock.get(f"{_BASE_URL}/api/client/servers/abc123").mock(return_value=httpx.Response(503))
 
     with pytest.raises(PterodactylError):
-        await client.send_power("abc123", "start")
+        await client.get_server("abc123")
 
     assert route.call_count == 3
 
 
 async def test_5xx_then_success_recovers_without_raising(respx_mock, client):
-    responses = iter([httpx.Response(500), httpx.Response(204)])
+    responses = iter([httpx.Response(500), httpx.Response(200, json=_SERVER_PAYLOAD)])
 
     def _responder(request: httpx.Request) -> httpx.Response:
         return next(responses)
 
-    respx_mock.post(f"{_BASE_URL}/api/client/servers/abc123/power").mock(side_effect=_responder)
+    respx_mock.get(f"{_BASE_URL}/api/client/servers/abc123").mock(side_effect=_responder)
 
-    await client.send_power("abc123", "start")  # should not raise
+    server = await client.get_server("abc123")
+    assert server.name == "Survival"
+
+
+async def test_create_server_does_not_retry_after_server_error(respx_mock, app_client):
+    route = respx_mock.post(f"{_BASE_URL}/api/application/servers").mock(
+        return_value=httpx.Response(503)
+    )
+
+    with pytest.raises(PterodactylError):
+        await app_client.create_server("Survival", _CREATE_TEMPLATE)
+
+    assert route.call_count == 1
+
+
+async def test_create_server_does_not_retry_after_ambiguous_transport_error(respx_mock, app_client):
+    route = respx_mock.post(f"{_BASE_URL}/api/application/servers").mock(
+        side_effect=httpx.ConnectError("connection dropped")
+    )
+
+    with pytest.raises(PterodactylError):
+        await app_client.create_server("Survival", _CREATE_TEMPLATE)
+
+    assert route.call_count == 1
 
 
 async def test_list_servers_parses_data_array(respx_mock, client):

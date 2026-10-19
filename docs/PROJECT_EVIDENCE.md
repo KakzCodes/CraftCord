@@ -15,6 +15,8 @@ CV-facing summary this record justifies.
 | 2026-10-19 | Added configuration/session/logging tests and mocked meta, player, and server command-path tests; corrected `/whois` username comparison; suite now passes at 75% coverage. |
 | 2026-10-19 | Added mocked admin registration/provisioning tests, including the grass-tier guard and safe no-configuration path; full suite now passes at 81% coverage. Updated the CV entry to the latest verified results. |
 | 2026-10-19 | Tested server-stop and server-unregister confirmation/cancellation branches; the full suite passes at 83% coverage, with dependency consistency and lint checks clean. |
+| 2026-10-20 | Rechecked Docker Desktop, the live Discord bot, all 121 automated tests, 83% coverage, and Ruff. Recorded the stale editable-install and Compose-source paths that prevent treating the running containers as a build from this checkout. |
+| 2026-10-20 | Hardened configuration and Pterodactyl retry behavior; tested bot startup wiring, documented the licence and setup, and reran 132 tests at 88% coverage. Ruff, pip-audit, Compose validation, and the local image build passed. |
 
 ---
 
@@ -347,11 +349,12 @@ commit `c764c376625475a0281a408a50be6c72dcfbb241`. The archive also contained
   real Pterodactyl integration remains unavailable and is not claimed.
 - Prototype 5's mocked Mojang/RCON paths are covered; real RCON integration
   remains unverified.
-- The 70% automated coverage target is now met; Prototype 6 still needs the
-  broader security/quality review to be recorded.
-- The README's command count, architecture sketch, and setup instructions
-  have now been corrected. Screenshot image links still point to placeholder
-  files that are not in the repository.
+- The 70% automated coverage target is met; the local security and quality
+  review is recorded in the Prototype 6 follow-up below. Live Pterodactyl and
+  RCON work remains dependent on external infrastructure.
+- The README's command count, architecture sketch, setup instructions, and
+  licensing information are documented. Live screenshots are omitted because
+  the current-checkout commands have not been reverified.
 - No changes were pushed to GitHub.
 
 ### Follow-up test and behavior verification
@@ -383,4 +386,70 @@ commit `c764c376625475a0281a408a50be6c72dcfbb241`. The archive also contained
   changes use Alembic (no `create_all()` path), external HTTP/RCON clients have
   timeouts, and admin commands are gated by Manage Server or the documented
   `CraftCord Admin` role. The role is still a hard-coded name, and dependency
-  vulnerability scanning and a real deployment threat review remain pending.
+  dependency audit has passed; a real deployment threat review remains pending.
+
+### Reverification from the Windows desktop
+
+**Date:** 2026-10-20
+
+- Docker Desktop 4.93.0 opened successfully and reported the Linux engine
+  running. `craftcord-bot-1` was running and `craftcord-db-1` was healthy.
+- The latest bot logs recorded successful Alembic startup, slash-command sync,
+  and the `bot_ready` event. The Discord test server showed CraftCord online.
+  `/ping` and `/help` were not invoked during this check.
+- Docker's Compose labels point to
+  `C:\Users\Yanick's PC\OneDrive - University of Kent\Desktop\Projects\Projects\craftcord\docker-compose.yml`,
+  which no longer exists. These live containers therefore cannot be attributed
+  to, or managed from, `C:\Github\CraftCord\current`; they were left running.
+- A plain `python -m pytest -q` from this checkout failed during conftest import
+  because the installed editable `craftcord` package points at the old OneDrive
+  project location. With `PYTHONPATH` set to this checkout's `src` directory,
+  the suite completed: **121 passed, 0 failed, 0 skipped**. Coverage was **83%**
+  (1,406 statements, branch measurement enabled), above the configured 70% gate.
+- The run emitted two deprecation warnings (`audioop` from discord.py and
+  Alembic's missing `path_separator` setting). `python -m ruff check .` passed.
+- At this point, the live bot and 121-test result were historical evidence;
+  the container stack was not built from this checkout. The follow-up below
+  records new verification performed directly against this source tree.
+
+### Prototype 6 follow-up — startup, dependency, and API safety review
+
+**Date:** 2026-10-20
+
+- Added validation tests that reject malformed Pterodactyl URLs with missing
+  hosts, embedded credentials, query strings, invalid ports, or port zero.
+- Restricted automatic Pterodactyl retries to GET/HEAD/OPTIONS. The API client
+  no longer replays write requests such as power actions, console commands, or
+  server creation after a timeout or server error, where the first request may
+  already have taken effect. Transport logs record exception type rather than
+  raw exception text.
+- Added a cog inventory test confirming the 20 commands enumerated in
+  COMMANDS.md and the project brief. Added bot lifecycle tests for extension
+  loading, global/development-guild sync selection, optional provisioning
+  template creation, and client/database cleanup. These tests mock Discord's
+  command sync and do not claim a live Discord check.
+- Updated the development test dependencies to pytest 9 and compatible
+  pytest-asyncio 1.4, and added Ruff and pip-audit to the documented dev tools.
+  Added the MIT LICENSE, corrected the PowerShell setup command, removed
+  broken screenshot links, and clarified that live panel/server access is
+  needed only for those integrations.
+- Full suite: **132 passed, 0 failed, 0 skipped**. Branch-aware coverage:
+  **88%** (1,422 statements, 200 branches), above the configured 70% threshold.
+  One warning remains: discord.py imports Python's deprecated audioop
+  module.
+- Ruff check: **passed**. pip check: **no broken requirements**. pip-audit:
+  **no known vulnerabilities found** in the installed Python environment.
+  These checks do not constitute a full deployment threat model or
+  operating-system image scan.
+- docker compose config --quiet: **passed**. Built the source image as
+  craftcord:local-audit; this validates image construction, not a Discord
+  login or full Compose startup.
+- The ignored local .env is only an .env.example scaffold: DISCORD_TOKEN is
+  empty and the panel/RCON settings are placeholders. No credentials were
+  added or extracted. The current checkout was not connected to Discord; the
+  existing Docker Desktop stack still points to the missing OneDrive checkout
+  recorded above and was left untouched.
+- Current-checkout live Discord /ping and /help, Pterodactyl, and Minecraft
+  RCON checks remain pending. No real panel or game server is available, and
+  Prototype 7 should stay deferred until infrastructure is available. No
+  hosting purchase is required to use the local test setup.

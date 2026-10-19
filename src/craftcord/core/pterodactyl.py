@@ -45,6 +45,7 @@ logger = get_logger(__name__)
 _MAX_ATTEMPTS = 3
 _BACKOFF_BASE_SECONDS = 0.5
 _RETRYABLE_STATUSES = {429, 500, 502, 503, 504}
+_RETRY_SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 _DEFAULT_TIMEOUT = httpx.Timeout(connect=5.0, read=15.0, write=15.0, pool=5.0)
 
 PowerSignal = Literal["start", "stop", "restart", "kill"]
@@ -206,11 +207,12 @@ def _extract_validation_detail(response: httpx.Response) -> str | None:
 async def _send_request(
     http: httpx.AsyncClient, method: str, path: str, *, json: dict[str, Any] | None = None
 ) -> dict[str, Any]:
-    """Issue one HTTP request with status-code mapping and retry-on-5xx/429.
+    """Issue one HTTP request with status mapping and safe retries.
 
     Shared by both `PterodactylClient` and `PterodactylApplicationClient` —
-    the retry policy, error mapping, and logging are identical regardless
-    of which Pterodactyl API surface is being called.
+    the error mapping and logging are shared. Only idempotent read methods
+    are retried: replaying POST requests could repeat a console command or
+    provision duplicate servers if the first response was lost.
 
     Args:
         http: The calling client's underlying `httpx.AsyncClient`.
@@ -225,12 +227,12 @@ async def _send_request(
         PterodactylNotFound: on a 404 response.
         PterodactylAuthError: on a 401 or 403 response.
         PterodactylValidationError: on a 422 response.
-        PterodactylRateLimited: on a 429 response that persists through
-            all retry attempts.
+        PterodactylRateLimited: on a 429 response.
         PterodactylError: on any other non-2xx response, or a network-
             level failure that persists through all retry attempts.
     """
     last_exc: Exception | None = None
+    can_retry = method.upper() in _RETRY_SAFE_METHODS
 
     for attempt in range(1, _MAX_ATTEMPTS + 1):
         started = time.monotonic()
@@ -244,10 +246,10 @@ async def _send_request(
                 path=path,
                 attempt=attempt,
                 duration_ms=duration_ms,
-                error=str(exc),
+                error_type=type(exc).__name__,
             )
             last_exc = exc
-            if attempt < _MAX_ATTEMPTS:
+            if can_retry and attempt < _MAX_ATTEMPTS:
                 await asyncio.sleep(_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1)))
                 continue
             raise PterodactylError(
@@ -285,7 +287,7 @@ async def _send_request(
                 ),
             )
 
-        if response.status_code in _RETRYABLE_STATUSES and attempt < _MAX_ATTEMPTS:
+        if can_retry and response.status_code in _RETRYABLE_STATUSES and attempt < _MAX_ATTEMPTS:
             await asyncio.sleep(_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1)))
             continue
 

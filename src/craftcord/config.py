@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from pydantic import Field, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -102,9 +103,22 @@ class Settings(BaseSettings):
     @field_validator("pterodactyl_url")
     @classmethod
     def _validate_pterodactyl_url(cls, value: str) -> str:
-        """Ensure the panel URL has no trailing slash and a valid scheme."""
+        """Validate a panel origin without embedded credentials or URL parameters."""
         if not value.startswith(("http://", "https://")):
             raise ValueError("PTERODACTYL_URL must start with http:// or https://")
+        parsed = urlsplit(value)
+        if not parsed.hostname:
+            raise ValueError("PTERODACTYL_URL must include a hostname")
+        if parsed.username is not None or parsed.password is not None:
+            raise ValueError("PTERODACTYL_URL must not include embedded credentials")
+        if parsed.query or parsed.fragment:
+            raise ValueError("PTERODACTYL_URL must not include a query string or fragment")
+        try:
+            port = parsed.port
+        except ValueError as exc:
+            raise ValueError("PTERODACTYL_URL contains an invalid port") from exc
+        if port == 0:
+            raise ValueError("PTERODACTYL_URL port must be between 1 and 65535")
         return value.rstrip("/")
 
     @field_validator("pterodactyl_api_key")
