@@ -13,6 +13,8 @@ CV-facing summary this record justifies.
 | 2026-10-10 | Prototype 1 started: Windows prerequisites confirmed; added an `on_ready` log line before attempting the first real startup (see below). |
 | 2026-10-19 | Recovered the newer local archive, verified the live Docker bot/database, reran all 62 tests, fixed an asyncio test-loop mismatch, and corrected current coverage and setup documentation. |
 | 2026-10-19 | Added configuration/session/logging tests and mocked meta, player, and server command-path tests; corrected `/whois` username comparison; suite now passes at 75% coverage. |
+| 2026-10-19 | Added mocked admin registration/provisioning tests, including the grass-tier guard and safe no-configuration path; full suite now passes at 81% coverage. Updated the CV entry to the latest verified results. |
+| 2026-10-19 | Tested server-stop and server-unregister confirmation/cancellation branches; the full suite passes at 83% coverage, with dependency consistency and lint checks clean. |
 
 ---
 
@@ -363,9 +365,15 @@ commit `c764c376625475a0281a408a50be6c72dcfbb241`. The archive also contained
   mixed-case test reproduces and guards against that bug.
 - `configure_logging()` now sets the root logger's level explicitly, including
   when the process already has logging handlers installed.
-- Latest full run: **111 passed, 0 failed, 0 skipped**; measured coverage is
-  **75%**, above the configured 70% threshold. Ruff passes and `git diff
+- Latest full run: **121 passed, 0 failed, 0 skipped**; measured coverage is
+  **83%**, above the configured 70% threshold. Ruff and `pip check` pass, and `git diff
   --check` reports no whitespace errors.
+- Admin command-body tests cover existing-server validation and registration,
+  the grass-tier limit, optional provisioning configuration, successful
+  mocked provisioning, and default-server selection. Permission enforcement
+  remains separately covered by the decorator tests.
+- Server-stop and server-unregister tests cover both confirmation and
+  cancellation, verifying no power request or deletion occurs when cancelled.
 - This raises automated coverage but does not finish the broader security and
   quality review. Real Pterodactyl and Minecraft RCON integration remain
   unverified; Docker containers were not restarted or modified.

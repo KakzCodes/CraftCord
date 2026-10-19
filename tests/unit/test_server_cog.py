@@ -32,6 +32,8 @@ def _interaction() -> Mock:
     interaction.response.send_message = AsyncMock()
     interaction.followup = Mock()
     interaction.followup.send = AsyncMock()
+    interaction.edit_original_response = AsyncMock()
+    interaction.channel = None
     return interaction
 
 
@@ -188,3 +190,47 @@ async def test_ip_shows_allocation_address_and_missing_allocation() -> None:
     interaction = _interaction()
     await _callback(ServerCog.ip)(cog, interaction, guild_row=_guild(), server_row=_server())
     assert interaction.followup.send.call_args.kwargs["ephemeral"] is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("confirmed", [False, True])
+async def test_stop_sends_power_only_after_confirmation(
+    monkeypatch: pytest.MonkeyPatch, confirmed: bool
+) -> None:
+    monkeypatch.setattr(server_module, "get_session", _SessionContext)
+    closed: list[int] = []
+
+    class SessionRepo:
+        def __init__(self, _session: object) -> None:
+            pass
+
+        async def close_latest(self, server_id: int) -> None:
+            closed.append(server_id)
+
+    class StopView:
+        def __init__(self, **_: object) -> None:
+            self.confirmed = confirmed
+
+        async def wait(self) -> None:
+            return None
+
+    monkeypatch.setattr(server_module, "SessionRepository", SessionRepo)
+    monkeypatch.setattr(server_module, "StopConfirmView", StopView)
+    ptero = SimpleNamespace(send_power=AsyncMock())
+    interaction = _interaction()
+
+    await _callback(ServerCog.stop)(
+        ServerCog(SimpleNamespace(pterodactyl=ptero)),
+        interaction,
+        guild_row=_guild(),
+        server_row=_server(),
+    )
+
+    if confirmed:
+        ptero.send_power.assert_awaited_once_with("uuid", "stop")
+        assert closed == [10]
+        assert interaction.edit_original_response.call_args.kwargs["content"] == "Server stop confirmed."
+    else:
+        ptero.send_power.assert_not_awaited()
+        assert closed == []
+        assert interaction.edit_original_response.call_args.kwargs["content"] == "Stop cancelled."
