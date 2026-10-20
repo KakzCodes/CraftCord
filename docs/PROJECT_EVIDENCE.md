@@ -490,8 +490,13 @@ commit `c764c376625475a0281a408a50be6c72dcfbb241`. The archive also contained
   completing, development-guild slash-command sync succeeding, and the bot
   becoming ready in one guild.
 - The project owner invoked `/help` in Discord and confirmed that it responded.
-  This is a live Discord interaction, not an automated test. `/ping` has not
-  yet been confirmed.
+  This is a live Discord interaction, not an automated test.
+- The project owner then invoked `/ping` and supplied a screenshot: the gateway
+  reported **98 ms**, while the Pterodactyl API was unreachable. A credential-
+  safe check confirmed that `PTERODACTYL_URL` is still a sample placeholder.
+  The bot therefore has no real panel address to contact; the client's
+  `ptlc_` key format does not establish that the key is valid. No successful
+  live Pterodactyl request has been verified.
 - The old bot's `401 Unauthorized` was isolated to the stale Compose project;
   the current checkout's token was accepted by Discord. No token value was
   included in this record or committed to Git.
