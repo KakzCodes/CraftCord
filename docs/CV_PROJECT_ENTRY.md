@@ -1,7 +1,7 @@
 ﻿# CraftCord — CV Project Entry
 
-**Status:** Local source, tests, and container image verified; current-checkout
-Discord login and live Pterodactyl/RCON integration pending.
+**Status:** Source, tests, container image, and a live Discord `/help` response
+verified from the current checkout; live Pterodactyl/RCON integration pending.
 
 **CraftCord** — Discord bot for Minecraft server management via Pterodactyl
 
@@ -19,7 +19,8 @@ Discord login and live Pterodactyl/RCON integration pending.
 - Verified 132 automated tests, including PostgreSQL integration and mocked
   API/command paths, at 88% branch-aware coverage. GitHub Actions passes the
   lint, dependency-audit, coverage, Compose, and Docker image checks on master;
-  live panel and RCON integrations remain unverified.
+  started the current Compose stack and confirmed `/help` responds in Discord.
+  Live panel and RCON integrations remain unverified.
 
 **Technology:** Python 3.12, discord.py, HTTPX, SQLAlchemy, PostgreSQL,
 Alembic, Pydantic, Docker Compose, pytest, Ruff.

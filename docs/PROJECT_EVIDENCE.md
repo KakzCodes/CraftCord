@@ -17,6 +17,7 @@ CV-facing summary this record justifies.
 | 2026-10-19 | Tested server-stop and server-unregister confirmation/cancellation branches; the full suite passes at 83% coverage, with dependency consistency and lint checks clean. |
 | 2026-10-20 | Rechecked Docker Desktop, the live Discord bot, all 121 automated tests, 83% coverage, and Ruff. Recorded the stale editable-install and Compose-source paths that prevent treating the running containers as a build from this checkout. |
 | 2026-10-20 | Hardened configuration and Pterodactyl retry behavior; tested bot startup wiring, documented the licence and setup, and reran 132 tests at 88% coverage. Ruff, pip-audit, Compose validation, and the local image build passed. |
+| 2026-10-20 | Started the Compose stack from this checkout under `craftcord-current`; database health, migrations, Discord gateway login, development-guild command sync, and a user-confirmed `/help` response were verified. Updated the Compose run instructions and CV entry. |
 
 ---
 
@@ -475,3 +476,29 @@ commit `c764c376625475a0281a408a50be6c72dcfbb241`. The archive also contained
   for commit `12cb503` completed successfully. Dependency installation,
   Ruff, `pip-audit`, tests, coverage enforcement, Compose validation, and the
   Docker image build all passed on GitHub's runner.
+
+### Prototype 1 follow-up — current-checkout Discord response
+
+**Date:** 2026-10-20
+
+- Built and started the Compose project from the current checkout using the
+  explicit project name `craftcord-current`. This is separate from
+  the stale `craftcord` project whose Compose file pointed to the removed
+  OneDrive checkout.
+- The current-checkout bot container was running with zero restarts, and the
+  PostgreSQL container was healthy. Startup logs showed the Alembic migration
+  completing, development-guild slash-command sync succeeding, and the bot
+  becoming ready in one guild.
+- The project owner invoked `/help` in Discord and confirmed that it responded.
+  This is a live Discord interaction, not an automated test. `/ping` has not
+  yet been confirmed.
+- The old bot's `401 Unauthorized` was isolated to the stale Compose project;
+  the current checkout's token was accepted by Discord. No token value was
+  included in this record or committed to Git.
+- No live Pterodactyl panel or Minecraft/RCON endpoint was configured or tested
+  in this run, so panel actions, server provisioning, and RCON behavior remain
+  unverified. `/help` confirms the Discord interaction path only.
+- Reproduction and operations from the repository root:
+  `docker compose -p craftcord-current up --build -d`, then
+  `docker compose -p craftcord-current ps` or
+  `docker compose -p craftcord-current logs -f bot`.

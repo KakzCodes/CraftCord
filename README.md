@@ -68,9 +68,14 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 Copy-Item .env.example .env
 notepad .env
-docker compose config --quiet
-docker compose up --build
+docker compose -p craftcord-current config --quiet
+docker compose -p craftcord-current up --build -d
+docker compose -p craftcord-current ps
 ```
+
+Use the same `-p craftcord-current` option for later Compose commands, including
+`docker compose -p craftcord-current logs -f bot`. It keeps this checkout's
+containers separate from Compose projects created from other directories.
 
 In `.env`, set a real `DISCORD_TOKEN`, a syntactically valid `PTERODACTYL_URL`
 and client key, and RCON values. Never commit `.env`. The example's panel and
