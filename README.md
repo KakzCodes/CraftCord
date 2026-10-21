@@ -2,7 +2,7 @@
 
 CraftCord is a Discord bot that lets a community start, stop, restart, and
 monitor Minecraft servers hosted on a [Pterodactyl](https://pterodactyl.io/)
-panel, directly from Discord slash commands. **Iteration 1 (this release)**
+panel, directly from Discord slash commands. **Version 1.0 (this release)**
 covers the free-tier MVP: server power control, live status, player
 lookup/location via RCON, and Minecraft-account linking, all backed by
 PostgreSQL as the single source of truth. There is no web dashboard, no
@@ -109,7 +109,7 @@ nothing to migrate manually.
      template in `.env` (see the "Pterodactyl (application API)" section of
      `.env.example`), then run `/admin create-server <name>`. This is
      admin-only for now; self-service server creation for individual users
-     is a paid-tier feature planned for a later iteration (see
+     is a paid-tier feature planned for a later Version (see
      [Roadmap](#roadmap)).
 4. Run `/help` to see everything else CraftCord can do.
 
@@ -121,8 +121,8 @@ live Pterodactyl and RCON screenshots require those services.
 
 ## Roadmap
 
-Iteration 1 deliberately stops short of the following — they're the
-intended direction for Iteration 2, not a promise of scope or timeline:
+Version 1 deliberately stops short of the following — they're the
+intended direction for Version 2, not a promise of scope or timeline:
 
 - Web dashboard
 - Tier-gated paid features (iron / gold / diamond behavior — the `tier`
